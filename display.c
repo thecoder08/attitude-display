@@ -9,16 +9,16 @@
 #include <unistd.h>
 #include "serial.h"
 
-void drawScreen(double m, double b) {
+void drawScreen(double m, double b, unsigned char flip) {
     for (int i = 0; i < 480; i++) {
         for (int j = 0; j < 640; j++) {
             int x = j - 320;
             int y = -(i - 240);
             if (y > m*x+b + 5) {
-                plot(j, i, 0xff55aaff);
+                plot(j, i, flip ? 0xffff5500 : 0xff55aaff);
             }
             else if (y < m*x+b - 5) {
-                plot(j, i, 0xffff5500);
+                plot(j, i, flip ? 0xff55aaff : 0xffff5500);
             }
             else {
                 plot(j, i, 0xffffffff);
@@ -58,10 +58,9 @@ int main(int argc, char** argv) {
         unsigned short roll;
         read(serial, &roll, 2);
         printf("%d %d %d\n", pitch, yaw, roll);
-        drawScreen(tan((double)roll/1023 * 6.28), sin((double)pitch/1023 * 6.28)*240);
+        drawScreen(tan((double)roll/1023 * 6.283), sin((double)pitch/1023 * 6.283)*240, (((double)roll/1023 * 6.283) < 1.571) || (((double)roll/1023 * 6.283) > 4.712));
         rectangle(213, 238, 213, 4, 0xffffffff);
         rectangle(318, 133, 4, 213, 0xffffffff);
-
         rectangle(0, 480, 640, 480, 0xff000000);
         for (unsigned short angle = 0; angle < 512; angle += 128) {
             double x = sin((double)(yaw + angle)/1023 * 6.28);
